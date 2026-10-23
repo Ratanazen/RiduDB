@@ -1,0 +1,71 @@
+{
+  "name": "ridudb-studio",
+  "productName": "RiduDB Studio",
+  "version": "0.1.0",
+  "description": "Native desktop database management studio for PostgreSQL, MySQL, and SQLite",
+  "main": "dist/electron/main.js",
+  "scripts": {
+    "electron:dev": "electron .",
+    "electron:build": "electron-builder build",
+    "electron:pack": "electron-builder pack",
+    "tsc": "tsc",
+    "tsc:renderer": "tsc -p tsconfig.renderer.json",
+    "tsc:w": "tsc --watch",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "repository": {
+    "type": "git",
+    "url": "ridudb-studio"
+  },
+  "license": "MIT",
+  "build": {
+    "appId": "com.ridudb.studio",
+    "productName": "RiduDB Studio",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "msi"
+      ],
+      "certificate": null,
+      "artifactName": "${productName}-${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "artifactName": "${productName}-${ext}"
+    }
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "electron": "^30.0.0",
+    "electron-store": "^8.0.0",
+    "mysql2": "^3.24.6",
+    "pg": "^8.23.1",
+    "sql.js": "^1.10.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20.19.43",
+    "@types/pg": "^8.23.1",
+    "@types/sqlite3": "^3.1.11",
+    "electron-builder": "^24.9.0",
+    "jest": "^30.5.2",
+    "ts-jest": "^29.4.15",
+    "typescript": "^5.3.0"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "allowScripts": {
+    "electron@31.7.7": true
+  }
+}

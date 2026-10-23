@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RiduDB Studio</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">RiduDB Studio</div>
+      <div class="status" id="status">
+        <span class="indicator disconnected" id="indicator"></span>
+        <span id="statusText">Disconnected</span>
+      </div>
+    </header>
+
+    <div class="body">
+      <!-- Connection manager -->
+      <section class="panel connection-panel">
+        <h2>Connection</h2>
+        <div class="form">
+          <label>Profile name</label>
+          <input type="text" id="profileName" placeholder="e.g. local sqlite" />
+
+          <label>Engine</label>
+          <select id="engine">
+            <option value="sqlite">SQLite</option>
+            <option value="postgres">PostgreSQL</option>
+            <option value="mysql">MySQL / MariaDB</option>
+          </select>
+
+          <div id="field-sqlite" class="engine-fields">
+            <label>Database file path</label>
+            <input type="text" id="fieldPath" placeholder="/tmp/ridudb.db or :memory:" />
+          </div>
+
+          <div id="field-postgres" class="engine-fields hidden">
+            <label>Host</label>
+            <input type="text" id="pgHost" placeholder="localhost" />
+            <label>Port</label>
+            <input type="text" id="pgPort" placeholder="5432" />
+            <label>Database</label>
+            <input type="text" id="pgDatabase" placeholder="postgres" />
+            <label>Username</label>
+            <input type="text" id="pgUser" placeholder="postgres" />
+            <label>Password</label>
+            <input type="password" id="pgPassword" placeholder="••••••••" />
+          </div>
+
+          <div id="field-mysql" class="engine-fields hidden">
+            <label>Host</label>
+            <input type="text" id="myHost" placeholder="127.0.0.1" />
+            <label>Port</label>
+            <input type="text" id="myPort" placeholder="3306" />
+            <label>Database</label>
+            <input type="text" id="myDatabase" placeholder="" />
+            <label>Username</label>
+            <input type="text" id="myUser" placeholder="root" />
+            <label>Password</label>
+            <input type="password" id="myPassword" placeholder="••••••••" />
+          </div>
+
+          <div class="form-actions">
+            <button type="button" id="btnValidate">Validate</button>
+            <button type="button" id="btnConnect">Connect</button>
+            <button type="button" id="btnDisconnect" class="secondary" disabled>Disconnect</button>
+          </div>
+        </div>
+
+        <div class="saved-profiles">
+          <h3>Saved profiles</h3>
+          <div id="profilesList">Loading profiles…</div>
+        </div>
+      </section>
+
+      <!-- Workspace -->
+      <section class="workspace">
+        <section class="panel schema-panel">
+          <h2>Schema</h2>
+          <div class="toolbar">
+            <button type="button" id="btnRefreshSchema" class="icon" title="Refresh schema">&#8635;</button>
+          </div>
+          <div id="schemaList">Connect to a database to inspect tables.</div>
+        </section>
+
+        <section class="panel editor-panel">
+          <h2>SQL editor</h2>
+          <textarea id="sqlEditor" placeholder="Write a read-only SELECT query..."></textarea>
+          <div class="editor-toolbar">
+            <label>Limit <input type="text" id="queryLimit" value="100" /></label>
+            <button type="button" id="btnRun" disabled>Run query</button>
+            <span class="hint">Read-only results only.</span>
+          </div>
+        </section>
+
+        <section class="panel results-panel">
+          <h2>Results <span id="resultStatus"></span></h2>
+          <div id="errorBox" class="error-box hidden"></div>
+          <div id="resultsContainer">
+            <div class="empty">Run a query to see results.</div>
+          </div>
+          <div class="results-meta" id="resultsMeta"></div>
+        </section>
+      </section>
+    </div>
+  </div>
+  <script src="./app.js"></script>
+</body>
+</html>

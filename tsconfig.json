@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist/out",
+    "rootDir": "./src",
+    "resolveJsonModule": true,
+    "declaration": true,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "backend": ["backend/src/connection"]
+    }
+  },
+  "include": ["src/main/index.ts"],
+  "exclude": ["node_modules", "dist"]
+}
