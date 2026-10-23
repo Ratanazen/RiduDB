@@ -5,6 +5,8 @@
   "description": "Native desktop database management studio for PostgreSQL, MySQL, and SQLite",
   "main": "dist/electron/main.js",
   "scripts": {
+    "test": "jest",
+    "test:backend": "node backend/test/run.js",
     "electron:dev": "electron .",
     "electron:build": "electron-builder build",
     "electron:pack": "electron-builder pack",
