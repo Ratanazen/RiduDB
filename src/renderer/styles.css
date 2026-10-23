@@ -85,6 +85,26 @@ button:disabled { opacity: 0.5; cursor: not-allowed; background: #334155; color:
 button.secondary { background: #334155; color: var(--text); }
 button.secondary:not(:disabled):hover { background: #475569; }
 
+.input-action-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.input-action-group input {
+  flex: 1 1 auto;
+}
+.input-action-group button {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.btn-sm {
+  flex: 0 0 auto !important;
+  padding: 4px 8px !important;
+  font-size: 11.5px !important;
+}
+
 /* saved profiles */
 .saved-profiles { padding: 10px 14px; border-top: 1px solid var(--panel-border); background: #16213e; }
 #profilesList { display: flex; flex-direction: column; gap: 6px; font-size: 12px; }

@@ -54,6 +54,10 @@ interface RidubApi {
     params: any[],
     limit: number,
   ) => Promise<{ ok: boolean; data?: ExecutionResult; error?: string }>;
+  selectDatabaseFile?: () => Promise<string | null>;
+  readClipboardText?: () => Promise<string>;
+  writeClipboardText?: (text: string) => Promise<boolean>;
+  onFileSelected?: (callback: (path: string) => void) => void;
 }
 
 declare global {
@@ -94,6 +98,9 @@ const el = {
   resultsContainer: document.getElementById('resultsContainer')! as HTMLElement,
   resultsMeta: document.getElementById('resultsMeta')! as HTMLElement,
   resultStatus: document.getElementById('resultStatus')! as HTMLElement,
+  btnBrowsePath: document.getElementById('btnBrowsePath') as HTMLButtonElement | null,
+  btnPastePath: document.getElementById('btnPastePath') as HTMLButtonElement | null,
+  btnPasteSql: document.getElementById('btnPasteSql') as HTMLButtonElement | null,
 };
 
 const fieldContainers: Record<string, HTMLElement> = {
@@ -101,6 +108,26 @@ const fieldContainers: Record<string, HTMLElement> = {
   postgres: document.getElementById('field-postgres')!,
   mysql: document.getElementById('field-mysql')!,
 };
+
+// ---------- Clipboard helper ----------
+async function getClipboardText(): Promise<string> {
+  try {
+    if (api && api.readClipboardText) {
+      const text = await api.readClipboardText();
+      if (typeof text === 'string') return text;
+    }
+  } catch {
+    /* fallback */
+  }
+  try {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      return await navigator.clipboard.readText();
+    }
+  } catch {
+    /* ignore */
+  }
+  return '';
+}
 
 // ---------- State ----------
 let activeConnectionId: string | null = null;
@@ -129,6 +156,62 @@ function wireListeners(): void {
   el.sqlEditor.addEventListener('keydown', (e) => {
     if (e.ctrlKey && e.key === 'Enter') { e.preventDefault(); handleRunQuery(); }
   });
+
+  // Browse SQLite database file dialog
+  if (el.btnBrowsePath) {
+    el.btnBrowsePath.addEventListener('click', async () => {
+      try {
+        if (api && api.selectDatabaseFile) {
+          const selected = await api.selectDatabaseFile();
+          if (selected) {
+            el.fieldPath.value = selected;
+            el.fieldPath.dispatchEvent(new Event('input', { bubbles: true }));
+            clearError();
+          }
+        }
+      } catch (err) {
+        showError(err instanceof Error ? err.message : String(err));
+      }
+    });
+  }
+
+  // Paste into SQLite database path
+  if (el.btnPastePath) {
+    el.btnPastePath.addEventListener('click', async () => {
+      const text = await getClipboardText();
+      if (text) {
+        const cleaned = text.trim().replace(/^['"]|['"]$/g, '');
+        el.fieldPath.value = cleaned;
+        el.fieldPath.dispatchEvent(new Event('input', { bubbles: true }));
+        clearError();
+      }
+    });
+  }
+
+  // Paste into SQL Editor
+  if (el.btnPasteSql) {
+    el.btnPasteSql.addEventListener('click', async () => {
+      const text = await getClipboardText();
+      if (text) {
+        el.sqlEditor.value = text;
+        el.sqlEditor.dispatchEvent(new Event('input', { bubbles: true }));
+        el.sqlEditor.focus();
+      }
+    });
+  }
+
+  // Listen for file selected from main menu (File -> Open SQLite Database...)
+  if (api && api.onFileSelected) {
+    api.onFileSelected((filePath: string) => {
+      if (filePath) {
+        el.engine.value = 'sqlite';
+        showEngineFields('sqlite');
+        el.fieldPath.value = filePath;
+        el.fieldPath.dispatchEvent(new Event('input', { bubbles: true }));
+        clearError();
+      }
+    });
+  }
 }
 
 function showEngineFields(engine: DbEngine): void {

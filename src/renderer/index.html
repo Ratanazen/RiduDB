@@ -33,7 +33,11 @@
 
           <div id="field-sqlite" class="engine-fields">
             <label>Database file path</label>
-            <input type="text" id="fieldPath" placeholder="/tmp/ridudb.db or :memory:" />
+            <div class="input-action-group">
+              <input type="text" id="fieldPath" placeholder="/tmp/ridudb.db or :memory:" />
+              <button type="button" id="btnBrowsePath" class="secondary btn-sm" title="Browse for SQLite database file">Browse</button>
+              <button type="button" id="btnPastePath" class="secondary btn-sm" title="Paste database path from clipboard">Paste</button>
+            </div>
           </div>
 
           <div id="field-postgres" class="engine-fields hidden">
@@ -91,6 +95,7 @@
           <div class="editor-toolbar">
             <label>Limit <input type="text" id="queryLimit" value="100" /></label>
             <button type="button" id="btnRun" disabled>Run query</button>
+            <button type="button" id="btnPasteSql" class="secondary btn-sm" title="Paste SQL from clipboard">Paste SQL</button>
             <span class="hint">Read-only results only.</span>
           </div>
         </section>

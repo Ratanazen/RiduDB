@@ -1,5 +1,5 @@
 // @ts-ignore
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, MenuItem, dialog, clipboard } from 'electron';
 import path from 'node:path';
 // @ts-ignore
 const Store = require('electron-store');
@@ -34,7 +34,96 @@ function redacted(p: StoredProfile): StoredProfile {
 const manager = new ConnectionManager();
 let mainWindow: BrowserWindow | null = null;
 
+async function openDatabaseFileDialog(): Promise<string | null> {
+  if (!mainWindow) return null;
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: 'Select SQLite Database',
+    properties: ['openFile'],
+    filters: [
+      { name: 'SQLite Databases (*.db, *.sqlite, *.sqlite3)', extensions: ['db', 'sqlite', 'sqlite3'] },
+      { name: 'All Files (*.*)', extensions: ['*'] },
+    ],
+  });
+  if (!result.canceled && result.filePaths.length > 0) {
+    return result.filePaths[0];
+  }
+  return null;
+}
+
+function setupAppMenu(): void {
+  const isMac = process.platform === 'darwin';
+  const template: any[] = [
+    ...(isMac ? [{ role: 'appMenu' }] : []),
+    {
+      label: 'File',
+      submenu: [
+        {
+          label: 'Open SQLite Database...',
+          accelerator: 'CmdOrCtrl+O',
+          click: async () => {
+            const filePath = await openDatabaseFileDialog();
+            if (filePath && mainWindow) {
+              mainWindow.webContents.send('app:file-selected', filePath);
+            }
+          },
+        },
+        { type: 'separator' },
+        isMac ? { role: 'close' } : { role: 'quit' },
+      ],
+    },
+    {
+      label: 'Edit',
+      submenu: [
+        { role: 'undo' },
+        { role: 'redo' },
+        { type: 'separator' },
+        { role: 'cut' },
+        { role: 'copy' },
+        { role: 'paste' },
+        ...(isMac ? [{ role: 'pasteAndMatchStyle' }] : []),
+        { role: 'delete' },
+        { type: 'separator' },
+        { role: 'selectAll' },
+      ],
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' },
+      ],
+    },
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'zoom' },
+        ...(isMac
+          ? [
+              { type: 'separator' },
+              { role: 'front' },
+              { type: 'separator' },
+              { role: 'window' },
+            ]
+          : [{ role: 'close' }]),
+      ],
+    },
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+}
+
 function createWindow(): void {
+  setupAppMenu();
+
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -46,6 +135,26 @@ function createWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
     },
+  });
+
+  mainWindow.webContents.on('context-menu', (_e, params) => {
+    const contextMenu = new Menu();
+    if (params.isEditable) {
+      contextMenu.append(new MenuItem({ label: 'Undo', role: 'undo' }));
+      contextMenu.append(new MenuItem({ label: 'Redo', role: 'redo' }));
+      contextMenu.append(new MenuItem({ type: 'separator' }));
+      contextMenu.append(new MenuItem({ label: 'Cut', role: 'cut' }));
+      contextMenu.append(new MenuItem({ label: 'Copy', role: 'copy' }));
+      contextMenu.append(new MenuItem({ label: 'Paste', role: 'paste' }));
+      contextMenu.append(new MenuItem({ type: 'separator' }));
+      contextMenu.append(new MenuItem({ label: 'Select All', role: 'selectAll' }));
+    } else if (params.selectionText) {
+      contextMenu.append(new MenuItem({ label: 'Copy', role: 'copy' }));
+      contextMenu.append(new MenuItem({ label: 'Select All', role: 'selectAll' }));
+    }
+    if (contextMenu.items.length > 0) {
+      contextMenu.popup();
+    }
   });
 
   mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
@@ -239,4 +348,18 @@ function setupIpc(): void {
       }
     },
   );
+
+  // ---- Dialog and Clipboard utilities ----
+  ipcMain.handle('dialog:openFile', async () => {
+    return await openDatabaseFileDialog();
+  });
+
+  ipcMain.handle('clipboard:readText', () => {
+    return clipboard.readText();
+  });
+
+  ipcMain.handle('clipboard:writeText', (_e, text: string) => {
+    clipboard.writeText(text || '');
+    return true;
+  });
 }

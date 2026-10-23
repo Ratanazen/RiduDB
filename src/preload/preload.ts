@@ -35,9 +35,16 @@ contextBridge.exposeInMainWorld('ridubAPI', {
   // Status
   getConnectionStatus: () => ipcRenderer.invoke(CHANNELS.LIST_CONNECTIONS),
 
+  // File dialog & Clipboard utilities
+  selectDatabaseFile: () => ipcRenderer.invoke('dialog:openFile'),
+  readClipboardText: () => ipcRenderer.invoke('clipboard:readText'),
+  writeClipboardText: (text: string) => ipcRenderer.invoke('clipboard:writeText', text),
+
   // Event subscriptions
   onQueryComplete: (callback: (result: any) => void) =>
     ipcRenderer.on('query-complete', (_, result: any) => callback(result)),
   onConnectionChanged: (callback: (status: any) => void) =>
     ipcRenderer.on('connection-changed', (_, status: any) => callback(status)),
+  onFileSelected: (callback: (filePath: string) => void) =>
+    ipcRenderer.on('app:file-selected', (_, filePath: string) => callback(filePath)),
 });
